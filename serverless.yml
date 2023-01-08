@@ -1,0 +1,208 @@
+service: pickme-food-serverless
+frameworkVersion: '3'
+
+plugins : 
+  - serverless-offline
+  
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: us-east-1
+  stage: prod
+  timeout: 10
+  endpointType: REGIONAL
+  environment:
+    USERS_TABLE: 'users'
+    RESTAURANTS_TABLE: 'restaurants'
+    FOOD_TABLE: 'food'
+    ORDER_TABLE: 'orders'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: 
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:*"
+
+functions:
+  addUser:
+    handler: api/userHandler.adduser
+    description: POST /adduser
+    events:
+      - http:
+          path: user/adduser
+          method: post
+
+  getUser:
+    handler: api/userHandler.getuser
+    description: POST /getuser
+    events:
+      - http:
+          path: user/getuser
+          method: post
+
+  getUsers:
+    handler: api/userHandler.getusers
+    description: GET /getusers
+    events:
+      - http:
+          path: user/getusers
+          method: get
+
+  addRestaurant:
+    handler: api/restaurantHandler.addrestaurant
+    description: POST /addrestaurant
+    events:
+      - http:
+          path: restaurant/addrestaurant
+          method: post
+
+  getRestaurant:
+    handler: api/restaurantHandler.getrestaurant
+    description: GET /getrestaurant
+    events:
+      - http:
+          path: restaurant/getrestaurant
+          method: get
+
+  getRestaurants:
+    handler: api/restaurantHandler.getrestaurants
+    description: GET /getrestaurants
+    events:
+      - http:
+          path: restaurant/getrestaurants
+          method: get    
+
+  addFood:
+    handler: api/foodHandler.addfood
+    description: POST /addfood
+    events:
+      - http:
+          path: food/addfood
+          method: post
+
+  getFood:
+    handler: api/foodHandler.getfood
+    description: GET /getfood
+    events:
+      - http:
+          path: food/getfood
+          method: get   
+
+  addOrder:
+    handler: api/orderHandler.addorder
+    description: POST /addorder
+    events:
+      - http:
+          path: order/addorder
+          method: post
+
+  getOrder:
+    handler: api/orderHandler.getorder
+    description: GET /getorder
+    events:
+      - http:
+          path: order/getorder
+          method: get  
+  
+  getOrders:
+    handler: api/orderHandler.getorders
+    description: GET /getorders
+    events:
+      - http:
+          path: order/getorders
+          method: get                         
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    RestaurantsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: ${self:provider.environment.RESTAURANTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: restaurant_id
+            AttributeType: S
+          - AttributeName: restaurant_name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: restaurant_id
+            KeyType: HASH
+          - AttributeName: restaurant_name
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    FoodTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: ${self:provider.environment.FOOD_TABLE}
+        AttributeDefinitions:
+          - AttributeName: food_id
+            AttributeType: S
+          - AttributeName: food_name
+            AttributeType: S
+          - AttributeName: restaurant_id
+            AttributeType: S            
+        KeySchema:
+          - AttributeName: food_id
+            KeyType: HASH
+          - AttributeName: food_name
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1            
+        GlobalSecondaryIndexes:
+          - IndexName: restaurant-id-index
+            KeySchema:
+              - AttributeName: restaurant_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: ${self:provider.environment.ORDER_TABLE}
+        AttributeDefinitions:
+          - AttributeName: order_id
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S        
+        KeySchema:
+          - AttributeName: order_id
+            KeyType: HASH
+          - AttributeName: user_id
+            KeyType: RANGE            
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
