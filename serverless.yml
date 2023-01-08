@@ -1,4 +1,4 @@
-service: pickme-food-serverless
+service: pickme-food-be
 frameworkVersion: '3'
 
 plugins : 
