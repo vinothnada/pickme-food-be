@@ -49,7 +49,7 @@ Resources:
     Type: 'AWS::CodeBuild::Project'
     Properties:
       Name: !Ref 'AWS::StackName'
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      ServiceRole: !GetAtt  CodeBuildServiceRole.Arn
       Source:
         Type: GITHUB
         Location: https://github.com/vinothnada/pickme-food-be.git

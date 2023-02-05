@@ -7,7 +7,7 @@ const tableName = process.env.FOOD_TABLE;
 exports.addfood = async (event, context) => {
 
       const food = JSON.parse(event.body);
-      food.food_id = "f" + Date.now();
+      food.food_id = "createdfoodid" + Date.now();
       const params = {
         TableName: tableName,
         Item: food,
